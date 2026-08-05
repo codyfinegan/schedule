@@ -1,0 +1,25 @@
+name: schedule-backend
+
+services:
+  php:
+    build:
+      context: ./docker/php
+    ports:
+      - "127.0.0.1:8082:80"
+    env_file: .env
+    volumes:
+      - .:/app
+      - ./docker/php/Caddyfile:/etc/frankenphp/Caddyfile:ro
+      - ./docker/php/conf.d/dev.ini:/usr/local/etc/php/conf.d/dev.ini:ro
+    tty: true
+
+  composer:
+    image: composer:2
+    profiles: ["tools"]
+    working_dir: /app
+    volumes:
+      - .:/app
+      - composer_cache:/tmp
+
+volumes:
+  composer_cache:

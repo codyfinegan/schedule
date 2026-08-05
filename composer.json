@@ -1,0 +1,18 @@
+{
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Schedule\\": "src/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.5"
+        },
+        "sort-packages": true
+    }
+}

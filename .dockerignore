@@ -1,0 +1,4 @@
+.git
+.env
+frankenphp-local-ca.crt
+vendor
