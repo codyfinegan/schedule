@@ -5,5 +5,11 @@
 :80 {
 	root * /app/public
 	encode zstd br gzip
+
+	# Everything -- API and page requests alike -- is routed through PHP;
+	# see app/routes.php for the page controllers (Pages\*) and the
+	# /assets/* route (FrontendController) that streams the built Vite
+	# bundles from storage/frontend/, outside the web root. Files that do
+	# exist directly under public/ (e.g. layout.css) are served as-is.
 	php_server
 }

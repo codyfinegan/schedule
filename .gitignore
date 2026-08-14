@@ -2,3 +2,6 @@
 certs
 /var/*.sqlite
 /vendor/
+/storage/frontend/
+/client/node_modules/
+.phpunit.result.cache

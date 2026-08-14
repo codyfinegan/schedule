@@ -1,9 +1,8 @@
 <?php
 
-if (!empty($_GET['info'])) {
-	phpinfo();
-	exit;
-}
+use Schedule\Http\Kernel;
 
-echo 'Schedule! Yep.';
+/** @var \DI\Container $container */
+$container = require __DIR__ . '/../app/bootstrap.php';
 
+$container->get(Kernel::class)->handle();
