@@ -1,0 +1,92 @@
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #ddd;
+  background: #fff;
+}
+
+.site-nav a {
+  color: #333;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.site-nav a:hover,
+.site-nav a.is-active {
+  color: #000;
+  font-weight: 600;
+}
+
+.site-nav .brand {
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.site-nav .admin-link {
+  margin-left: auto;
+}
+
+.logout-form {
+  margin: 0;
+}
+
+.logout-form button {
+  font: inherit;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-form button:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.not-found {
+  max-width: 480px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+@media print {
+  .site-nav {
+    display: none !important;
+  }
+
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+}
