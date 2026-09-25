@@ -6,10 +6,12 @@
 
 services:
   # Stands in for S3 + CloudFront: a plain static file server, no app logic.
+  # Serves client/dist, same as the S3 bucket only ever holds the built
+  # output in prod -- run the pnpm service below to (re)build it.
   client:
     image: caddy:2-alpine
     volumes:
-      - ./client:/srv:ro
+      - ./client/dist:/srv:ro
     command: ["caddy", "file-server", "--listen", ":80", "--root", "/srv", "--browse=false"]
     ports:
       - "127.0.0.1:8085:80"
@@ -69,6 +71,20 @@ services:
     volumes:
       - ./api:/app
       - composer_cache:/tmp
+
+  # No Node on the host (see readme) -- pnpm commands for client/ run through
+  # this, e.g. `docker compose run --rm pnpm install`, `... pnpm build`.
+  pnpm:
+    image: node:22-alpine
+    profiles: ["tools"]
+    working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /tmp
+      npm_config_cache: /tmp/.npm
+    entrypoint: ["npx", "--yes", "pnpm"]
+    volumes:
+      - ./client:/app
 
 volumes:
   composer_cache:
