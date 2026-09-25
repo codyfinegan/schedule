@@ -1,45 +1,30 @@
-name: schedule-backend
+name: schedule
 
+# Base: what's true in every environment. `docker compose up` auto-merges
+# docker-compose.override.yml on top of this for local dev. Prod merges
+# docker-compose.prod.yml instead — see readme in each override file.
 services:
-  php:
-    build:
-      context: ./docker/php
-    ports:
-      - "127.0.0.1:8082:80"
-    env_file: .env
-    volumes:
-      - .:/app
-      - ./docker/php/Caddyfile:/etc/frankenphp/Caddyfile:ro
-      - ./docker/php/conf.d/dev.ini:/usr/local/etc/php/conf.d/dev.ini:ro
-    tty: true
+  # Reverse proxy in front of PHP-FPM. TLS handling differs per environment
+  # (see the override files), so this service intentionally defines no
+  # ports or Caddyfile mount of its own.
+  api-caddy:
+    image: caddy:2-alpine
     depends_on:
-      - mailpit
+      - api-php
+    restart: unless-stopped
 
-  mailpit:
-    image: axllent/mailpit:latest
-    ports:
-      - "127.0.0.1:8083:8025"
-    environment:
-      MP_SMTP_AUTH_ACCEPT_ANY: "1"
-      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
-
-  composer:
-    image: composer:2
-    profiles: ["tools"]
-    working_dir: /app
-    user: "${UID:-1000}:${GID:-1000}"
+  # The SQLite file lives in a named volume mounted over /app/var, not in
+  # the source tree — same separation as the DO Volume in prod, so the DB
+  # survives an image rebuild independent of the code either way.
+  api-php:
+    build:
+      context: ./api
+      dockerfile: docker/Dockerfile
     volumes:
-      - .:/app
-      - composer_cache:/tmp
-
-  frontend:
-    image: node:20-alpine
-    profiles: ["tools"]
-    working_dir: /app/client
-    user: "${UID:-1000}:${GID:-1000}"
-    volumes:
-      - .:/app
-    command: ["sh", "-c", "npm install && npm run build"]
+      - api_var:/app/var
+    env_file:
+      - ./api/.env
+    restart: unless-stopped
 
 volumes:
-  composer_cache:
+  api_var:

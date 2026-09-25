@@ -1,0 +1,28 @@
+# Prod. Not auto-loaded — run explicitly on the droplet:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# There is no client, mailpit, or mail-worker service here on purpose:
+# the frontend is served from S3 + CloudFront, and inbound RSVP replies are
+# handled by Cloudflare Email Routing + a Worker — neither runs on this box.
+# api-php also gets no source bind-mount here — it runs whatever was COPY'd
+# into the image at build time, not whatever happens to be on disk.
+
+# Requires API_DOMAIN set (shell env, or a .env next to this file) — no
+# default here on purpose, so a bare `up` fails loudly instead of standing up
+# a prod TLS cert for the wrong hostname.
+services:
+  api-caddy:
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN before running the prod stack}
+    volumes:
+      - ./api/docker/Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - ./api/public:/app/public:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:
+  caddy_data:
+  caddy_config:

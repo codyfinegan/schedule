@@ -1,0 +1,8 @@
+{$API_DOMAIN} {
+	root * /app/public
+	encode gzip
+
+	php_fastcgi api-php:9000
+
+	file_server
+}

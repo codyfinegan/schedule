@@ -1,1 +1,0 @@
-{"root":["./src/env.d.ts","./src/shims-vue.d.ts","./src/api/client.ts","./src/api/types.ts","./src/entries/_shared.ts","./src/entries/admin.ts","./src/entries/blocks.ts","./src/entries/calendar.ts","./src/entries/login.ts","./src/views/AdminView.vue","./src/views/CalendarView.vue","./src/views/ListView.vue","./src/views/LoginView.vue"],"version":"5.9.3"}

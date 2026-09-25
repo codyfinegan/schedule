@@ -1,0 +1,74 @@
+# Dev-only. Docker Compose loads this automatically alongside docker-compose.yml
+# whenever you run `docker compose up` with no -f flags — nothing extra to type.
+# Everything here has a prod equivalent that lives outside this compose project
+# entirely: client -> S3 + CloudFront, mailpit/mail-worker -> Cloudflare Email
+# Routing + Worker, TLS -> the sibling `proxy` project instead of Caddy itself.
+
+services:
+  # Stands in for S3 + CloudFront: a plain static file server, no app logic.
+  client:
+    image: caddy:2-alpine
+    volumes:
+      - ./client:/srv:ro
+    command: ["caddy", "file-server", "--listen", ":80", "--root", "/srv", "--browse=false"]
+    ports:
+      - "127.0.0.1:8085:80"
+    restart: unless-stopped
+
+  api-caddy:
+    volumes:
+      - ./api/docker/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - ./api/public:/app/public:ro
+    ports:
+      - "127.0.0.1:8086:80"
+
+  api-php:
+    # Bind-mount the source over the image's baked-in copy so edits show up
+    # without a rebuild. Prod deliberately omits this — see docker-compose.prod.yml.
+    volumes:
+      - ./api:/app
+
+  # SMTP catcher standing in for the real outbound path AND the recipient's
+  # inbox — mail-worker reads replies back out of it, same as Cloudflare
+  # Email Routing would hand a reply to the Worker in prod.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:8087:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    restart: unless-stopped
+
+  # Local stand-in for the Cloudflare Worker: polls mailpit for replies
+  # addressed to the RSVP mailbox, pulls UID + PARTSTAT out of the
+  # text/calendar part, and forwards a signed webhook to the API — same
+  # job the Worker does, just polling instead of being invoked on receipt.
+  mail-worker:
+    image: python:3.12-alpine
+    volumes:
+      - ./mail-worker/worker.py:/worker.py:ro
+    environment:
+      PYTHONUNBUFFERED: "1"
+      MAILPIT_URL: http://mailpit:8025
+      WEBHOOK_URL: http://api-caddy/webhooks/rsvp
+      RSVP_ADDRESS: ${RSVP_ADDRESS:-rsvp@botc.example.test}
+      RSVP_WEBHOOK_SECRET: ${RSVP_WEBHOOK_SECRET:-dev-secret-change-me}
+      POLL_SECONDS: "5"
+    command: ["python", "/worker.py"]
+    depends_on:
+      - mailpit
+      - api-caddy
+    restart: unless-stopped
+
+  composer:
+    image: composer:2
+    profiles: ["tools"]
+    working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./api:/app
+      - composer_cache:/tmp
+
+volumes:
+  composer_cache:

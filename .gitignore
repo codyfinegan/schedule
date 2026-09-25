@@ -1,7 +1,5 @@
 .env
-certs
-/var/*.sqlite
-/vendor/
-/storage/frontend/
+/api/vendor/
 /client/node_modules/
-.phpunit.result.cache
+/client/dist/
+/LIBRARIES.md

@@ -1,0 +1,16 @@
+{
+    "name": "cody/schedule-api",
+    "type": "project",
+    "require": {
+        "php": "^8.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Schedule\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
