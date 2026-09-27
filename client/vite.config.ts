@@ -1,13 +1,14 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 
 // Pure SPA build -- output is pushed as-is to the S3 bucket in prod (see
 // readme.md), so outDir stays at the default ./dist with no PHP-aware
 // manifest handling.
 export default defineConfig({
   base: '/',
-  plugins: [vue()],
+  plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

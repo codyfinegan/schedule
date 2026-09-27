@@ -1,0 +1,4 @@
+# vue-demi (via reka-ui -> @floating-ui/vue) only needs its postinstall to
+# switch to Vue 2 shims; its default files already target Vue 3.
+allowBuilds:
+  vue-demi: false
