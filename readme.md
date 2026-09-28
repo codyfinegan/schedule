@@ -129,7 +129,9 @@ docker compose run --rm pnpm install
 docker compose run --rm pnpm build
 ```
 
-`client/pnpm-lock.yaml` is committed; `client/node_modules/` and `client/dist/` are not. The `client` service serves `client/dist` directly — same as the S3 bucket only ever holding the built output in prod — so re-run `pnpm build` after frontend changes to see them at `127.0.0.1:8085` (or through your reverse proxy, see above).
+`client/pnpm-lock.yaml` is committed; `client/node_modules/` and `client/dist/` are not. The `client` service serves `client/dist` directly — same as the S3 bucket only ever holding the built output in prod.
+
+`docker compose up` also starts `client-watch`, which reruns `vite build` on every save so `client/dist` (and what `client` serves) stays current without a manual rebuild. It's a full rebuild per change, not HMR, and skips the `vue-tsc` type-check for speed — run `pnpm build` yourself for the type-checked build before committing.
 
 ### Production
 

@@ -86,5 +86,21 @@ services:
     volumes:
       - ./client:/app
 
+  # Rebuilds client/dist on every save (no HMR -- a full `vite build` rerun
+  # per change), so the `client` service above always serves current output.
+  # Skips vue-tsc on purpose for a fast loop; run `pnpm build` for the
+  # type-checked build before committing.
+  client-watch:
+    image: node:22-alpine
+    working_dir: /app
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /tmp
+      npm_config_cache: /tmp/.npm
+    entrypoint: ["npx", "--yes", "pnpm", "exec", "vite", "build", "--watch"]
+    volumes:
+      - ./client:/app
+    restart: unless-stopped
+
 volumes:
   composer_cache:
