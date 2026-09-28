@@ -121,3 +121,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Theme switch crossfade -- see ThemeToggle.vue. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 300ms;
+  animation-timing-function: ease-in-out;
+}
