@@ -1,11 +1,16 @@
 <?php
 
-// Placeholder entrypoint to verify the Caddy + PHP-FPM + SQLite plumbing.
-// Replace once real routing exists.
+require __DIR__ . '/../vendor/autoload.php';
 
-header('Content-Type: application/json');
-echo json_encode([
-    'status' => 'ok',
-    'service' => 'schedule-api',
-    'php' => PHP_VERSION,
-]);
+try {
+    new \Schedule\Kernel(__DIR__ . '/..')
+        ->boot()
+        ->run();
+} catch (\Throwable $exception) {
+    error_log((string)$exception);
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+    echo '{"error":"server_error"}';
+}
