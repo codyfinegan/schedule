@@ -19,7 +19,7 @@ const props = defineProps<{
       )
     ">
     <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-      <h1 class="text-base font-medium text-lg">
+      <h1 class="font-medium text-lg">
         <a href="/">
         BOTC
         <small>Game Scheduler</small>

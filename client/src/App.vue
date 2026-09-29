@@ -1,7 +1,22 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
+import { onMounted, ref } from 'vue'
+import { isAxiosError } from 'axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppHeader } from '@/components/app'
+import { api } from '@/api'
+
+const me = ref<unknown>(null)
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/me')
+    me.value = data
+  } catch (err) {
+    me.value = isAxiosError(err)
+      ? { error: err.message, status: err.response?.status, data: err.response?.data }
+      : { error: String(err) }
+  }
+})
 </script>
 
 <template>
@@ -9,11 +24,10 @@ import { AppHeader } from '@/components/app'
   <div class="mx-auto my-16 flex max-w-lg flex-col gap-3">
     <Card>
       <CardHeader>
-        <CardTitle>Schedule</CardTitle>
+        <CardTitle>/me</CardTitle>
       </CardHeader>
-      <CardContent class="flex flex-col items-start gap-4">
-        <p>Dummy content -- Vue 3 + Vite + shadcn-vue scaffold is wired up.</p>
-        <Button>It works</Button>
+      <CardContent>
+        <pre class="overflow-x-auto text-sm">{{ me === null ? 'Loading…' : JSON.stringify(me, null, 2) }}</pre>
       </CardContent>
     </Card>
   </div>
