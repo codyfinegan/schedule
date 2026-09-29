@@ -17,6 +17,8 @@ FROM php:8.5-fpm-alpine
 RUN apk add --no-cache sqlite-dev \
     && docker-php-ext-install pdo_sqlite
 
+RUN echo 'expose_php = Off' > "$PHP_INI_DIR/conf.d/zz-hardening.ini"
+
 WORKDIR /app
 
 COPY --from=vendor /app/vendor ./vendor
