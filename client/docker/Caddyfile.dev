@@ -1,0 +1,7 @@
+# SPA fallback: unknown paths serve index.html so vue-router can resolve deep
+# links on reload -- same job as CloudFront's 403/404 -> /index.html in prod.
+:80 {
+	root * /srv
+	try_files {path} /index.html
+	file_server
+}
