@@ -18,7 +18,7 @@ final class Kernel
     ) {
     }
 
-    public function boot()
+    public function boot(): App
     {
         $config = Config::fromEnv(getenv());
         $container = new ContainerBuilder()

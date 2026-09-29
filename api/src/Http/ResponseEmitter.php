@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface;
 
 final class ResponseEmitter {
 
-    public function emit(ResponseInterface $response): void {
+    public function emit(ResponseInterface $response): void  {
         if (headers_sent()) {
             throw new \Exception('Headers already sent');
         }

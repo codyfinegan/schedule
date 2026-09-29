@@ -11,6 +11,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Schedule\Http\Middleware\CorsMiddleware;
 use Schedule\Http\ResponseEmitter;
 
 
@@ -22,6 +23,7 @@ final class App implements RequestHandlerInterface
         private Router $router,
         private ServerRequestCreator $requestCreator,
         private ResponseEmitter $emitter,
+        private CorsMiddleware $corsMiddleware,
     ) {
     }
 
@@ -39,6 +41,6 @@ final class App implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->router->dispatch($request);
+        return $this->corsMiddleware->process($request, $this->router);
     }
 }

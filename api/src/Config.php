@@ -25,12 +25,12 @@ final class Config
     public static function fromEnv(array $env): self
     {
         return new self(
-            database_path: $env['DATABASE_PATH'] ?? '',
-            app_url: $env['APP_URL'] ?? '',
-            origin_url: $env['ORIGIN_URL'] ?? '',
-            mailer_dsn: $env['MAILER_DSN'] ?? '',
-            mailer_from: $env['MAIL_FROM'] ?? '',
-            rsvp_webhook_secret: $env['RSVP_WEBHOOK_SECRET'] ?? '',
+            database_path: $env['DATABASE_PATH'],
+            app_url: $env['APP_URL'],
+            origin_url: $env['ORIGIN_URL'],
+            mailer_dsn: $env['MAILER_DSN'],
+            mailer_from: $env['MAIL_FROM'],
+            rsvp_webhook_secret: $env['RSVP_WEBHOOK_SECRET'],
         );
     }
 }
