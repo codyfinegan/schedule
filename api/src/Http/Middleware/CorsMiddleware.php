@@ -34,6 +34,12 @@ class CorsMiddleware implements MiddlewareInterface
                     ->withHeader('Access-Control-Allow-Headers', self::ALLOWED_HEADERS)
                     ->withHeader('Access-Control-Max-Age', '600');
             }
+        } elseif ($origin !== '' && !$allowed && !$this->isSafeMethod($request)) {
+            // A simple (non-preflighted) cross-site request, e.g. a form post, would
+            // otherwise reach the handler with only the CORS headers withheld.
+            // Requests without an Origin are not from a browser on another site
+            // (server-to-server webhooks), so they pass through.
+            $response = $this->responseFactory->createResponse(403);
         } else {
             $response = $handler->handle($request);
         }
@@ -52,5 +58,10 @@ class CorsMiddleware implements MiddlewareInterface
     {
         return $request->getMethod() === 'OPTIONS'
             && $request->hasHeader('Access-Control-Request-Method');
+    }
+
+    private function isSafeMethod(ServerRequestInterface $request): bool
+    {
+        return in_array($request->getMethod(), ['GET', 'HEAD', 'OPTIONS'], true);
     }
 }
