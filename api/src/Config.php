@@ -19,11 +19,13 @@ final class Config
     /**
      * Create a new configuration option based on the env vars.
      *
-     * @param array $env
+     * @param null|array $env
      * @return self
      */
-    public static function fromEnv(array $env): self
+    public static function fromEnv(?array $env = null): self
     {
+        $env ??= getenv();
+
         return new self(
             database_path: $env['DATABASE_PATH'],
             app_url: $env['APP_URL'],

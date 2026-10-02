@@ -5,26 +5,24 @@ declare(strict_types=1);
 namespace Schedule;
 
 
+use DI\Container;
 use DI\ContainerBuilder;
 use League\Route\Router;
 use League\Route\Strategy\JsonStrategy;
 use Psr\Container\ContainerInterface;
+use Schedule\Http\Middleware\SessionMiddleware;
 
 final class Kernel
 {
 
     public function __construct(
-        private string $baseDir,
+        private readonly string $baseDir,
     ) {
     }
 
     public function boot(): App
     {
-        $config = Config::fromEnv(getenv());
-        $container = new ContainerBuilder()
-            ->addDefinitions([Config::class => $config])
-            ->addDefinitions($this->baseDir . '/config/container.php')
-            ->build();
+        $container = $this->container();
 
         $strategy = $container->get(JsonStrategy::class);
         $strategy->setContainer($container);
@@ -39,5 +37,20 @@ final class Kernel
         $container->set(ContainerInterface::class, $container);
 
         return $container->get(App::class);
+    }
+
+    /**
+     * Build just the DI container, without the HTTP stack, for CLI scripts.
+     *
+     * @return Container
+     */
+    public function container(): Container
+    {
+        $config = Config::fromEnv(getenv());
+
+        return new ContainerBuilder()
+            ->addDefinitions([Config::class => $config])
+            ->addDefinitions($this->baseDir . '/config/container.php')
+            ->build();
     }
 }

@@ -3,3 +3,6 @@
 docker
 var
 vendor
+
+# The entrypoint is the one docker/ file the image needs.
+!docker/entrypoint.sh

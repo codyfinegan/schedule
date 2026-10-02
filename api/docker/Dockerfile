@@ -26,3 +26,16 @@ COPY --from=vendor /app/vendor ./vendor
 # Baked in so the prod image is self-contained. Dev shadows this with a live
 # bind-mount (docker-compose.override.yml), so edits there don't need a rebuild.
 COPY . .
+
+# A fresh named volume copies this directory's ownership, so the SQLite
+# volume mounted here starts out writable by www-data.
+RUN mkdir -p var && chown www-data:www-data var
+
+# Runs migrations, then hands off to the base image's entrypoint (php-fpm).
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Everything from here on, migrations and FPM included, runs unprivileged.
+USER www-data
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]

@@ -29,6 +29,25 @@ services:
     # without a rebuild. Prod deliberately omits this — see docker-compose.prod.yml.
     volumes:
       - ./api:/app
+      - ./api/var:/app/var # dev: DB on host
+
+  # Browser UI for the SQLite DB, opened read-only. No prod equivalent --
+  # in prod, inspect the file on the droplet's volume directly. Runs as
+  # www-data's uid so it can never leave a root-owned file in the volume.
+  db-viewer:
+    build:
+      dockerfile_inline: |
+        FROM python:3.12-alpine
+        RUN pip install --no-cache-dir sqlite-web==0.8.2
+    user: "82:82"
+    volumes:
+      - ./api/var:/app/var
+    command: ["sqlite_web", "--host", "0.0.0.0", "--no-browser", "--read-only", "/app/var/database.sqlite"]
+    ports:
+      - "127.0.0.1:8088:8080"
+    depends_on:
+      - api-php
+    restart: unless-stopped
 
   # SMTP catcher standing in for the real outbound path AND the recipient's
   # inbox — mail-worker reads replies back out of it, same as Cloudflare

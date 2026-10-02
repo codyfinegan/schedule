@@ -1,20 +1,21 @@
 {
-    "name": "cody/schedule-api",
-    "type": "project",
-    "require": {
-        "php": "^8.5",
-        "league/route": "^7.0",
-        "nyholm/psr7": "^1.8",
-        "nyholm/psr7-server": "^1.1",
-        "php-di/php-di": "^7.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "Schedule\\": "src/"
-        }
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "sort-packages": true
+  "name": "cody/schedule-api",
+  "type": "project",
+  "require": {
+    "php": "^8.5",
+    "league/route": "^7.0",
+    "nyholm/psr7": "^1.8",
+    "nyholm/psr7-server": "^1.1",
+    "php-di/php-di": "^7.1",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Schedule\\": "src/"
     }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  }
 }
