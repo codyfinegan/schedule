@@ -1,5 +1,7 @@
 <?php
 
 return static function (\League\Route\Router $r): void {
-    $r->get('/me', \Schedule\Http\Controllers\MeController::class);
+    $r->group('', function (\League\Route\RouteGroup $group) {
+        $group->get('/me', \Schedule\Http\Controllers\MeController::class);
+    })->lazyMiddleware(\Schedule\Http\Middleware\SessionMiddleware::class);
 };
