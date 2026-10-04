@@ -122,6 +122,24 @@ docker compose run --rm composer install
 
 `composer.lock` is committed; `api/vendor/` is not — it's populated by the command above (dev) or baked in at image build time (prod).
 
+### PHP linting
+
+PHP_CodeSniffer (PSR-12, plus camelCase variables and properties) and PHPStan, configured in `api/phpcs.xml.dist` and `api/phpstan.neon.dist`:
+
+```
+docker compose exec -u "$(id -u):$(id -g)" api-php vendor/bin/phpcs          # check style
+docker compose exec -u "$(id -u):$(id -g)" api-php vendor/bin/phpcbf         # auto-fix style
+docker compose exec -u "$(id -u):$(id -g)" api-php vendor/bin/phpstan analyse
+```
+
+Run them as your own user (`-u`): `api-php` defaults to `www-data`, which can't write to the bind-mounted source or PHPStan's cache in `api/.cache/`.
+
+A versioned pre-commit hook runs phpcbf on the staged API PHP files, re-stages them, then blocks the commit if phpcs or phpstan still fail. It needs `api-php` running. Enable it once per clone:
+
+```
+git config core.hooksPath .githooks
+```
+
 ### Frontend build
 
 ```

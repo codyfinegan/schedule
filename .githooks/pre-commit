@@ -1,0 +1,42 @@
+#!/bin/sh
+# Formats staged API PHP files with phpcbf, then blocks the commit on any
+# remaining phpcs or phpstan error. Enable with: git config core.hooksPath .githooks
+set -eu
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -- 'api/*.php')
+[ -z "$files" ] && exit 0
+
+if [ -z "$(docker compose ps -q --status running api-php)" ]; then
+    echo "pre-commit: api-php isn't running — start it with 'docker compose up -d'." >&2
+    exit 1
+fi
+
+# phpcbf rewrites the working copy, so a partially staged file would have its
+# unstaged changes swept into the commit by the re-add below.
+partial=$(git diff --name-only -- $files)
+if [ -n "$partial" ]; then
+    echo "pre-commit: these files have unstaged changes; stage or stash them first:" >&2
+    echo "$partial" | sed 's/^/  /' >&2
+    exit 1
+fi
+
+# Container workdir is /app (the api/ directory).
+container_files=$(echo "$files" | sed 's#^api/##')
+
+# Run as the host user: api-php defaults to www-data, which can't write to
+# the bind-mounted source (phpcbf) or a cache it didn't create (phpstan).
+php() {
+    docker compose exec -T -u "$(id -u):$(id -g)" api-php "$@"
+}
+
+# phpcbf exits 1 when it fixed something, 2+ on failure.
+status=0
+php vendor/bin/phpcbf -q $container_files || status=$?
+if [ "$status" -gt 1 ]; then
+    echo "pre-commit: phpcbf failed." >&2
+    exit 1
+fi
+git add -- $files
+
+php vendor/bin/phpcs -q $container_files
+php vendor/bin/phpstan analyse --no-progress --memory-limit=512M

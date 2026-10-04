@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Schedule">
+    <description>PSR-12, plus camelCase variables and properties.</description>
+
+    <file>src</file>
+    <file>public</file>
+    <file>bin</file>
+
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <config name="php_version" value="80500"/>
+
+    <rule ref="PSR12"/>
+
+    <!-- PSR-1/12 only cover method names; this catches snake_case variables and properties. -->
+    <rule ref="Squiz.NamingConventions.ValidVariableName">
+        <!-- Requires a leading underscore on private members, which PSR-12 discourages. -->
+        <exclude name="Squiz.NamingConventions.ValidVariableName.PrivateNoUnderscore"/>
+    </rule>
+</ruleset>

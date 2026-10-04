@@ -4,3 +4,4 @@
 /client/dist/
 /LIBRARIES.md
 /api/var/
+/api/.cache/

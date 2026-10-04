@@ -6,3 +6,8 @@ vendor
 
 # The entrypoint is the one docker/ file the image needs.
 !docker/entrypoint.sh
+
+# Dev-only lint/analysis config.
+phpcs.xml.dist
+phpstan.neon.dist
+.cache
