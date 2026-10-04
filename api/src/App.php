@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Schedule;
 
-
 use League\Route\Router;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Container\ContainerInterface;
@@ -14,10 +13,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Schedule\Http\Middleware\CorsMiddleware;
 use Schedule\Http\ResponseEmitter;
 
-
 final class App implements RequestHandlerInterface
 {
-
     public function __construct(
         private ContainerInterface $container,
         private Router $router,
