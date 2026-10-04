@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Schedule\Http\Middleware;
@@ -49,7 +50,7 @@ final class SessionMiddleware implements MiddlewareInterface
             return;
         }
 
-        if (!hash_equals($session->csrf_token, $request->getHeaderLine('X-CSRF-Token'))) {
+        if (!hash_equals($session->csrfToken, $request->getHeaderLine('X-CSRF-Token'))) {
             throw new ForbiddenException();
         }
     }

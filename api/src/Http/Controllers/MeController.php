@@ -1,17 +1,21 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Schedule\Http\Controllers;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Schedule\Http\Resources\SessionResource;
+use Schedule\Models\Session;
 
 final class MeController
 {
-    public function __invoke(ServerRequestInterface $request, array $args): array|ResponseInterface
+    /**
+     * @param array<string, string> $args
+     */
+    public function __invoke(ServerRequestInterface $request, array $args): SessionResource
     {
-        return [
-            'hi' => 'uyes'
-        ];
+        $session = Session::fromRequest($request);
+        return SessionResource::fromSession($session);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Schedule\Http\Middleware;
@@ -24,7 +25,7 @@ class CorsMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $origin = $request->getHeaderLine('Origin');
-        $allowed = $origin !== '' && $origin === $this->config->origin_url;
+        $allowed = $origin !== '' && $origin === $this->config->originUrl;
 
         if ($this->isPreflight($request)) {
             $response = $this->responseFactory->createResponse(204);

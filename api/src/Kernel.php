@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Schedule;
 
-
 use DI\Container;
 use DI\ContainerBuilder;
 use League\Route\Router;
 use League\Route\Strategy\JsonStrategy;
 use Psr\Container\ContainerInterface;
-use Schedule\Http\Middleware\SessionMiddleware;
 
 final class Kernel
 {
-
     public function __construct(
         private readonly string $baseDir,
     ) {

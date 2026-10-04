@@ -6,10 +6,9 @@ namespace Schedule\Models;
 
 final readonly class NewSession
 {
-
     public function __construct(
         public Session $session,
-        public string $raw_token,
+        public string $rawToken,
     ) {
     }
 }

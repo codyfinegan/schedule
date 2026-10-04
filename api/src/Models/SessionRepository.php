@@ -19,15 +19,30 @@ final class SessionRepository
 
     public function findValid(string $hash, int $now): ?Session
     {
-        $statement = $this->database->prepare('SELECT * FROM sessions WHERE token_hash = :hash AND expires_at > :now');
+        $statement = $this->database->prepare('
+            SELECT s.token_hash, s.csrf_token, s.created_at, s.last_seen_at, s.expires_at,
+                   u.id AS user__id,
+                   u.email AS user__email,
+                   u.name AS user__name,
+                   u.is_admin AS user__is_admin,
+                   u.created_at AS user__created_at,
+                   u.last_login_at AS user__last_login_at
+            FROM sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.token_hash = :hash 
+              AND s.expires_at > :now
+        ');
         $statement->execute(['hash' => $hash, 'now' => $now]);
         $row = $statement->fetch();
-        return $row ? Session::fromRow($row) : null;
+        if (!$row) {
+            return null;
+        }
+        return Session::fromRow($row);
     }
 
     public function touch(Session $session, int $now): Session
     {
-        if ($now - $session->last_seen_at < self::TOUCH_INTERVAL) {
+        if ($now - $session->lastSeenAt < self::TOUCH_INTERVAL) {
             return $session;
         }
 
@@ -40,39 +55,43 @@ final class SessionRepository
         );
         $row = [
             'now' => $now,
-            'hash' => $session->token_hash,
-            'expires_at' => min($session->created_at + self::MAX_LIFETIME, $now + self::IDLE_TTL),
+            'hash' => $session->tokenHash,
+            'expires_at' => min($session->createdAt + self::MAX_LIFETIME, $now + self::IDLE_TTL),
         ];
         $statement->execute($row);
         return $session->touched($row['now'], $row['expires_at']);
     }
 
     public function create(
-        int $user_id,
+        User $user,
         int $now,
     ): NewSession {
         $token = $this->generateToken();
-        $csrf_token = $this->generateToken();
-        $hash_token = hash('sha256', $token);
+        $csrfToken = $this->generateToken();
+        $hashToken = hash('sha256', $token);
 
         $statement = $this->database->prepare(
             '
             INSERT INTO sessions (token_hash, user_id, csrf_token, created_at, last_seen_at, expires_at)
                 VALUES (:token_hash, :user_id, :csrf_token, :now, :now, :expires_at)'
         );
-        $expires_at = $now + self::IDLE_TTL;
+        $expiresAt = $now + self::IDLE_TTL;
         $row = [
-            'token_hash' => $hash_token,
-            'user_id' => $user_id,
-            'csrf_token' => $csrf_token,
+            'token_hash' => $hashToken,
+            'user_id' => $user->id,
+            'csrf_token' => $csrfToken,
             'now' => $now,
-            'expires_at' => $expires_at,
+            'expires_at' => $expiresAt,
         ];
         $statement->execute($row);
 
         $session = new Session(
-            token_hash: $hash_token, user_id: $user_id, csrf_token: $csrf_token,
-            created_at: $now, last_seen_at: $now, expires_at: $expires_at,
+            tokenHash: $hashToken,
+            csrfToken: $csrfToken,
+            createdAt: $now,
+            lastSeenAt: $now,
+            expiresAt: $expiresAt,
+            user: $user,
         );
         return new NewSession($session, $token);
     }
@@ -81,5 +100,4 @@ final class SessionRepository
     {
         return bin2hex(random_bytes(32));
     }
-
 }
