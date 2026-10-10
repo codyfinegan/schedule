@@ -20,6 +20,6 @@ return [
     UriFactoryInterface::class => \DI\get(RequestFactoryInterface::class),
 
     Database::class => fn(Config $config) => Factory::create(
-        $config->database_path
+        $config->databasePath
     ),
 ];
