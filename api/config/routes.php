@@ -7,6 +7,7 @@ return static function (\League\Route\Router $r): void {
         ->lazyMiddleware(\Schedule\Http\Middleware\SessionMiddleware::class);
 
     $r->group('/auth', function (\League\Route\RouteGroup $group) {
+        $group->post('/login', \Schedule\Http\Controllers\Auth\LoginController::class);
         $group->post('/logout', \Schedule\Http\Controllers\Auth\LogoutController::class)
             ->lazyMiddleware(\Schedule\Http\Middleware\SessionMiddleware::class);
     });
