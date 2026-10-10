@@ -6,6 +6,10 @@ namespace Schedule;
 
 final class Config
 {
+    private const array REQUIRED = [
+        'DATABASE_PATH', 'APP_URL', 'ORIGIN_URL', 'MAILER_DSN', 'MAIL_FROM', 'RSVP_WEBHOOK_SECRET',
+    ];
+
     public function __construct(
         protected(set) string $databasePath,
         protected(set) string $appUrl,
@@ -25,6 +29,14 @@ final class Config
     public static function fromEnv(?array $env = null): self
     {
         $env ??= getenv();
+
+        $missing = array_filter(
+            self::REQUIRED,
+            static fn(string $key): bool => !isset($env[$key]) || $env[$key] === '',
+        );
+        if ($missing !== []) {
+            throw new \RuntimeException('Missing required env vars: ' . implode(', ', $missing));
+        }
 
         return new self(
             databasePath: $env['DATABASE_PATH'],
