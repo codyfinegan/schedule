@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Schedule\Http\Controllers\Auth;
 
+use League\Route\Http\Exception;
 use League\Route\Http\Exception\UnauthorizedException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -11,6 +12,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Schedule\Http\Resources\SessionResource;
 use Schedule\Models\SessionRepository;
 use Schedule\Models\UserRepository;
+use Schedule\Services\LoginThrottle;
 use Schedule\Services\SessionCookieService;
 
 final class LoginController
@@ -20,6 +22,7 @@ final class LoginController
         private SessionRepository $sessionRepository,
         private SessionCookieService $sessionCookieService,
         private ResponseFactoryInterface $responseFactory,
+        private LoginThrottle $loginThrottle,
     ) {
     }
 
@@ -31,10 +34,21 @@ final class LoginController
     {
         $email = $request->getParsedBody()['email'] ?? null;
         $password = $request->getParsedBody()['password'] ?? null;
+        $ipAddress = $request->getServerParams()['REMOTE_ADDR'] ?? null;
+        $now = time();
 
         // Fail if we're missing a field
         if (empty($email) || empty($password) || !is_string($email) || !is_string($password)) {
+            $this->loginThrottle->recordFailure(now: $now, ip: $ipAddress);
             throw new UnauthorizedException();
+        }
+
+        if ($this->loginThrottle->tooManyAttempts($email, $ipAddress, $now)) {
+            throw new Exception(
+                429,
+                'Too Many Requests',
+                headers: ['Retry-After' => (string)LoginThrottle::WINDOW]
+            );
         }
 
         // Look up the user hash
@@ -45,12 +59,18 @@ final class LoginController
 
         // Now verify the password
         if (!password_verify($password, $passwordHash)) {
+            $this->loginThrottle->recordFailure(now: $now, email: $email, ip: $ipAddress);
             throw new UnauthorizedException();
         }
 
         // Load bearing
         if ($userId < 0) {
             throw new UnauthorizedException();
+        }
+
+        $oldToken = $this->sessionCookieService->getCookieFromRequest($request);
+        if (is_string($oldToken) && $oldToken !== '') {
+            $this->sessionRepository->destroyByHash(hash('sha256', $oldToken));
         }
 
         // Does the hash need updating
@@ -65,7 +85,11 @@ final class LoginController
             throw new UnauthorizedException();
         }
 
-        $newSession = $this->sessionRepository->create($user, time());
+        $newSession = $this->sessionRepository->create($user, $now);
+
+        $this->loginThrottle->clear($email);
+        $this->loginThrottle->prune($now);
+        $this->sessionRepository->purgeExpired($now);
 
         $response = $this->responseFactory->createResponse(200);
         $response = $this->sessionCookieService->withSessionCookie($response, $newSession->rawToken)

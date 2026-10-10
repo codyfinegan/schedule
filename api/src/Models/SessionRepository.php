@@ -105,9 +105,23 @@ final class SessionRepository
 
     public function destroy(Session $session): void
     {
+        $this->destroyByHash($session->tokenHash);
+    }
+
+    public function destroyByHash(string $hash): void
+    {
         $statement = $this->database->prepare('DELETE FROM sessions WHERE token_hash = :hash');
         $row = [
-            'hash' => $session->tokenHash,
+            'hash' => $hash,
+        ];
+        $statement->execute($row);
+    }
+
+    public function purgeExpired(int $now): void
+    {
+        $statement = $this->database->prepare('DELETE FROM sessions WHERE expires_at <= :now');
+        $row = [
+            'now' => $now,
         ];
         $statement->execute($row);
     }
