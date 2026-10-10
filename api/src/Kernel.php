@@ -7,7 +7,6 @@ namespace Schedule;
 use DI\Container;
 use DI\ContainerBuilder;
 use League\Route\Router;
-use League\Route\Strategy\JsonStrategy;
 use Psr\Container\ContainerInterface;
 
 final class Kernel
@@ -21,7 +20,7 @@ final class Kernel
     {
         $container = $this->container();
 
-        $strategy = $container->get(JsonStrategy::class);
+        $strategy = $container->get(Http\ErrorSafeJsonStrategy::class);
         $strategy->setContainer($container);
 
         $router = new Router();

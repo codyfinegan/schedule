@@ -12,5 +12,5 @@ try {
         http_response_code(500);
         header('Content-Type: application/json');
     }
-    echo '{"error":"server_error"}';
+    echo '{"status_code": 500, "reason_phrase": "Internal Server Error"}';
 }
