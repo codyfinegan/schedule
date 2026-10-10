@@ -37,6 +37,8 @@ COPY --from=vendor /app/vendor ./vendor
 # Baked in so the prod image is self-contained. Dev shadows this with a live
 # bind-mount (docker-compose.override.yml), so edits there don't need a rebuild.
 COPY . .
+RUN --mount=from=composer:2,source=/usr/bin/composer,target=/usr/bin/composer \
+    composer dump-autoload --optimize --classmap-authoritative --no-dev
 
 # A fresh named volume copies this directory's ownership, so the SQLite
 # volume mounted here starts out writable by www-data.
