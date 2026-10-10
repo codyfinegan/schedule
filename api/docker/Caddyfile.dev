@@ -1,10 +1,13 @@
 :80 {
-	root * /app/public
-	encode gzip
+    root * /app/public
+    encode gzip
 
-	php_fastcgi api-php:9000
+    php_fastcgi api-php:9000
 
-	file_server
-	header -Via
-	header -Server
+    header {
+        -Via
+        -Server
+        X-Content-Type-Options nosniff
+        Strict-Transport-Security "max-age=31536000"
+    }
 }
