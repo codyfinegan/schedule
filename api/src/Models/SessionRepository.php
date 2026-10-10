@@ -8,9 +8,9 @@ use Schedule\Database\Database;
 
 final class SessionRepository
 {
-    private const int TOUCH_INTERVAL = 60 * 60;
-    private const int IDLE_TTL = 60 * 60 * 24 * 30;
-    private const int MAX_LIFETIME = 60 * 60 * 24 * 365;
+    public const int TOUCH_INTERVAL = 60 * 60;
+    public const int IDLE_TTL = 60 * 60 * 24 * 30;
+    public const int MAX_LIFETIME = 60 * 60 * 24 * 365;
 
     public function __construct(
         private readonly Database $database,
@@ -19,7 +19,8 @@ final class SessionRepository
 
     public function findValid(string $hash, int $now): ?Session
     {
-        $statement = $this->database->prepare('
+        $statement = $this->database->prepare(
+            '
             SELECT s.token_hash, s.csrf_token, s.created_at, s.last_seen_at, s.expires_at,
                    u.id AS user__id,
                    u.email AS user__email,
@@ -31,7 +32,8 @@ final class SessionRepository
             JOIN users u ON u.id = s.user_id
             WHERE s.token_hash = :hash 
               AND s.expires_at > :now
-        ');
+        '
+        );
         $statement->execute(['hash' => $hash, 'now' => $now]);
         $row = $statement->fetch();
         if (!$row) {
@@ -99,5 +101,14 @@ final class SessionRepository
     private function generateToken(): string
     {
         return bin2hex(random_bytes(32));
+    }
+
+    public function destroy(Session $session): void
+    {
+        $statement = $this->database->prepare('DELETE FROM sessions WHERE token_hash = :hash');
+        $row = [
+            'hash' => $session->tokenHash,
+        ];
+        $statement->execute($row);
     }
 }

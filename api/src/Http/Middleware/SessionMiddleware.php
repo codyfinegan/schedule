@@ -12,19 +12,19 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Schedule\Models\Session;
 use Schedule\Models\SessionRepository;
+use Schedule\Services\SessionCookieService;
 
 final class SessionMiddleware implements MiddlewareInterface
 {
-    public const string COOKIE = '__Host-_botcsession';
-
     public function __construct(
         private SessionRepository $sessionRepository,
+        private SessionCookieService $sessionCookieService,
     ) {
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $cookie = $request->getCookieParams()[self::COOKIE] ?? null;
+        $cookie = $this->sessionCookieService->getCookieFromRequest($request);
         if (!is_string($cookie) || empty($cookie)) {
             throw new UnauthorizedException();
         }
