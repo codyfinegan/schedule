@@ -30,6 +30,9 @@ services:
     volumes:
       - ./api:/app
       - ./api/var:/app/var # dev: DB on host
+    build:
+      args:
+        PHP_ENV: development
 
   # Browser UI for the SQLite DB, opened read-only. No prod equivalent --
   # in prod, inspect the file on the droplet's volume directly. Runs as
