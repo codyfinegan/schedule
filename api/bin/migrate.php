@@ -17,15 +17,15 @@ if ($mode !== 'wal') {
     exit(1);
 }
 
-$current = (int) $pdo->query('PRAGMA user_version')->fetchColumn();
-
 foreach (glob(__DIR__ . '/../migrations/*.sql') as $file) {
     $version = (int) basename($file, '.sql');
+    $pdo->exec('BEGIN IMMEDIATE');
+    $current = (int) $pdo->query('PRAGMA user_version')->fetchColumn();
     if ($version <= $current) {
+        $pdo->exec('COMMIT');
         continue;
     }
 
-    $pdo->exec('BEGIN IMMEDIATE');
     try {
         $pdo->exec(file_get_contents($file));
         $pdo->exec("PRAGMA user_version = $version");
