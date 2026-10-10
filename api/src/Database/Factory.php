@@ -14,6 +14,7 @@ final class Factory
         ]);
         $db->exec('PRAGMA foreign_keys = ON;');
         $db->exec('PRAGMA busy_timeout = 5000;');
+        $db->exec('PRAGMA synchronous = NORMAL;');
 
         return $db;
     }

@@ -10,6 +10,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $container = new Kernel(__DIR__ . '/..')->container();
 
 $pdo = $container->get(Database::class);
+
+$mode = $pdo->query('PRAGMA journal_mode = WAL')->fetchColumn();
+if ($mode !== 'wal') {
+    fwrite(STDERR, 'Failed to enable WAL (journal_mode=' . $mode . ')' . PHP_EOL);
+    exit(1);
+}
+
 $current = (int) $pdo->query('PRAGMA user_version')->fetchColumn();
 
 foreach (glob(__DIR__ . '/../migrations/*.sql') as $file) {
